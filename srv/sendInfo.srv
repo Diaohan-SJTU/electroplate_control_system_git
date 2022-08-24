@@ -1,0 +1,5 @@
+//发送控制系统重要信息
+//机械臂行为
+string robotmovements
+---
+bool check_flag
