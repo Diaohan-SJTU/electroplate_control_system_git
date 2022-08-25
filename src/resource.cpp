@@ -1,4 +1,4 @@
-//resourceԴ�ļ�
+//resource源文件
 // Created by A on 2022/4/29.
 //
 #include "electroplate_control_system_git/resource.h"
@@ -21,20 +21,18 @@ int robot::move_judge(double target_position1, double target_position2)//���
 
 }
 
-//�ƶ�ȥץȡ
-//��ʼ��ʱ,���Ļ�����״̬
-//ʵ�ʣ������ƶ�ץȡָ��
+//移动去抓取
 void robot::move2put_v1(double tg_position,int job_number)
 {
     is_on_use=true;
     target_position=tg_position;
-    //���Ļ�����״̬
+    //更改缓冲区状态
     int buffer_status_flag=0;
     int buffer_change_nb=0;
     job_nb-=job_number;
     for(int i=0;i<2;i++)
     {
-        if(buffer_change_nb>=job_number){break;}//�������
+        if(buffer_change_nb>=job_number){break;}//更改完毕
         if(buffer_status[i]==(1-buffer_status_flag))
         {
             buffer_status[i]=buffer_status_flag;
@@ -58,14 +56,12 @@ void robot::grab_v1(int job_number)
     is_on_use=true;
     plan_job_id=-1;
     is_position=false;
-
-    //���Ļ�����״̬
     int buffer_status_flag=1;
     int buffer_change_nb=0;
     job_nb+=job_number;
     for(int i=0;i<2;i++)
     {
-        if(buffer_change_nb>=job_number){break;}//�������
+        if(buffer_change_nb>=job_number){break;}
         if(buffer_status[i]==(1-buffer_status_flag))
         {
             buffer_status[i]=buffer_status_flag;
@@ -82,7 +78,7 @@ void robot::move2clean_v1(double tg_position)
 
 
 
-void robot::status_detect_v1(ros_com &rc)//��is_on_useΪtrueʱ������ʱ����м��
+void robot::status_detect_v1(ros_com &rc)
 {
     if(id==0){position=rc.robot0_position;}
     else{position=rc.robot1_position;}
@@ -90,7 +86,7 @@ void robot::status_detect_v1(ros_com &rc)//��is_on_useΪtrueʱ�����
     {
         if(rc.robot_done_flag[id]==1)
         {
-            cout<<id<<"�Ż�е�۱�Ϊ����"<<endl;
+            cout<<id<<"_robot_get_free!"<<endl;
             is_on_use= false;
             //position=target_position;
             rc.robot_done_flag[id]=0;
@@ -98,7 +94,6 @@ void robot::status_detect_v1(ros_com &rc)//��is_on_useΪtrueʱ�����
     }
 }
 
-//��
 
 
 void pot::work_v1(int action_type,int job_number,int process_time)
@@ -106,9 +101,9 @@ void pot::work_v1(int action_type,int job_number,int process_time)
     is_on_use=true;
     countdown_start= false;
     wait_time=process_time;
-    if(action_type==3){return;}//ˮϴ����Ҫ���Ļ�����״̬
+    if(action_type==3){return;}//水洗不需要更改缓冲区状态
     int buffer_status_flag=buffer_status;
-    if(action_type==2)//����ʱ
+    if(action_type==2)//放置
     {
         buffer_status_flag=1;
         job_nb=job_number;
@@ -118,16 +113,15 @@ void pot::work_v1(int action_type,int job_number,int process_time)
         buffer_status_flag=0;
         job_nb=0;
     }
-    //���Ļ�����
+    //更改缓冲区状态
     if(buffer_status==buffer_status_flag)
     {
-        cout<<"error!!!!!!!!!:�ۻ�����״̬�޸Ĵ���"<<endl;
+        cout<<"error!!!!!!!!!pot_buffer_status_modify_error"<<endl;
     }
     buffer_status=buffer_status_flag;
-    //���ĹҼ�����
+    //更改挂架数量
 }
 
-//��⵽unity�˴������������ָ�������Ҫ��ʼ��ʱ���ȴ���С�ӹ�ʱ��֮��pot.is_on_use��true!
 void pot::status_detect_v1(ros_com &rc)
 {
     if(is_on_use==true)
@@ -136,8 +130,7 @@ void pot::status_detect_v1(ros_com &rc)
         {
 //            cout<<id<<"�Ų۱�Ϊ����"<<endl;
 //            is_on_use= false;
-            //��ʼ��ʱ
-            cout<<id<<"�Ųۿ�ʼ�ӹ���ʱ"<<wait_time<<"s"<<endl;
+            cout<<id<<"_pot_countdown_for_"<<wait_time<<"s"<<endl;
             start_time=time(NULL);
             countdown_start= true;
             rc.pot_done_flag[id]=0;
@@ -150,7 +143,7 @@ void pot::status_detect_v1(ros_com &rc)
             dif = difftime (now,start_time);
             if(dif>=wait_time)
             {
-                cout<<id<<"�Ų۱�Ϊ����"<<endl;
+                cout<<id<<"_pot_get_free"<<endl;
                 is_on_use= false;
                 countdown_start= false;
             }
@@ -166,12 +159,11 @@ void cart::work_v1(int action_type,int job_number,const int co_id[])
     is_on_use=true;
     int buffer_status_flag=0;
     if(action_type==2){buffer_status_flag=1;}
-    //���Ļ�����
     for(int i =0;i<job_number;i++)
     {
         if(buffer_status[co_id[i]]==buffer_status_flag)
         {
-            cout<<"error!!!!!!!!!:���ϳ�������״̬�޸Ĵ���"<<endl;
+            cout<<"error!!!!!!!!!pot_buffer_status_modify_error"<<endl;
         }
         buffer_status[co_id[i]]=buffer_status_flag;
     }
@@ -183,7 +175,7 @@ void cart::status_detect_v1(ros_com &rc)
     {
         if(rc.cart_done_flag[id]==1)
         {
-            cout<<id<<"���Ƴ���Ϊ����"<<endl;
+            cout<<id<<"_cart_get_free"<<endl;
             is_on_use= false;
             rc.cart_done_flag[id]=0;
         }

@@ -1,4 +1,4 @@
-//plan_systemԴ�ļ�
+//plan_system源文件
 // Created by A on 2022/4/27.
 //
 #include "electroplate_control_system_git/plan_system.h"
@@ -8,6 +8,7 @@
 #include <unistd.h>
 using namespace std;
 
+//使用内置工艺储存，后续需更改为调用ros service
 void plan_system::job_init(int *type_list)
 {
     for(int i=0;i<6;i++)
@@ -16,7 +17,7 @@ void plan_system::job_init(int *type_list)
         jobs[i].priority=1;
         jobs[i].type=type_list[i];
         jobs[i].pot_process_nb=11;
-        //******������Ϣ��ʼ����ʽv1******
+        //使用内置的两种工艺
         switch(type_list[i])
         {
             case 0:
@@ -46,10 +47,10 @@ void plan_system::job_init(int *type_list)
     cout<<"job_init_over"<<endl;
 
 }
-//******plan_job_unit()��ʼ����ʽv1******//
+//根据job信息初始化plan_job类，作为调度的基本单元
 void plan_system::plan_job_init()
 {
-    //����jobs��Ϣ�õ�job_repeat_information,plan_job_init;����ȡ�������ظ���Ϣ
+    //根据jobs信息获得job_repeat_information，即获取6个工件的重复信息；
     job_repeat_information[0][0]=0;
     job_repeat_information[0][1]=0;
     plan_job_nb=1;
@@ -72,6 +73,7 @@ void plan_system::plan_job_init()
         repeat_time=0;
     }
 
+    //按照上述重复信息，初始化数个plan_job
     for (int i=0;i<plan_job_nb;i++)
     {
         priority_list[i]=i;
@@ -93,7 +95,7 @@ void plan_system::plan_job_init()
         plan_jobs[i].is_done=false;
         plan_jobs[i].operation_nb=0;
 
-        if(b!=0)//���ڰ�
+        if(b!=0)//存在重复
         {
             plan_jobs[i].job_number=2;
             plan_jobs[i].priority+=1;
@@ -101,7 +103,7 @@ void plan_system::plan_job_init()
         }
 
         //first_operation:cart to robot
-        plan_jobs[i].operation_list[0].robot_id=0;//Ĭ��0
+        plan_jobs[i].operation_list[0].robot_id=0;//默认0
         plan_jobs[i].operation_list[0].is_assign= false;
         plan_jobs[i].operation_list[0].target_type=2;//cart
         plan_jobs[i].operation_list[0].target_id=0;
@@ -114,7 +116,7 @@ void plan_system::plan_job_init()
         //operation[1-2m+2]
         for (int m=0;m<jobs[i].pot_process_nb;m++)
         {
-            if(jobs[a].pot_process[m][3]==0)//���ղ�
+            if(jobs[a].pot_process[m][3]==0)//工艺槽
             {
                 //robot to pot
                 // put
@@ -139,7 +141,7 @@ void plan_system::plan_job_init()
                 plan_jobs[i].operation_list[n].max_time4process=0;
                 plan_jobs[i].operation_nb++;
             }
-            else//ˮϴ��
+            else//水洗槽
             {
                 n = plan_jobs[i].operation_nb;
                 plan_jobs[i].operation_list[n].robot_id=0;//robot
@@ -153,7 +155,7 @@ void plan_system::plan_job_init()
             }
 
         }
-        //last_operation:robot to robot
+        //last_operation:robot to cart
         n = plan_jobs[i].operation_nb;
         plan_jobs[i].operation_list[n].robot_id=0;//robot
         plan_jobs[i].operation_list[n].is_assign= false;
@@ -174,27 +176,26 @@ void plan_system::plan_v1(ros_com &rc)
     int plan_job_id=0;
     while(true)
     {
-        //״̬����
-        //��������ʱͨ����ʱʵ��
+        //根据ros通信情况进行状态更新
         status_detect_v1(rc);
         resourceManagement.resource_status_detect_v1(rc);
 
-        //�ж��Ƿ�ȫ���ӹ����
+        //先判断是否全部加工完成
         if(isdone())
         {
-            cout<<"�ӹ�������";
+            cout<<"all_work_done!";
             break;
         }
         else
         {
-            //�����ȼ������ж�
+            //按优先级进行判断
             for(int i=0;i<plan_job_nb;i++)
             {
                 plan_job_id=priority_list[i];
-                if(plan_jobs[plan_job_id].is_done){continue;}//�Ѽӹ���ɵĲ��迼��
+                if(plan_jobs[plan_job_id].is_done){continue;}//已加工完成的不予考虑
                 if(resourceManagement.is_resource_assign(plan_jobs[plan_job_id]))
                 {
-                    cout<<"��ʼ�����е�ۣ�plan_job:"<<plan_job_id<<endl;
+                    cout<<"start_to_assign_robots_for_plan_job:"<<plan_job_id<<endl;
                     resourceManagement.resource_assign_v1(plan_jobs[plan_job_id],rc);
                 }
                 else
@@ -204,11 +205,11 @@ void plan_system::plan_v1(ros_com &rc)
             }
         }
         sleep(1);
-        cout<<"1s�󣬿�ʼ״̬��⣡"<<endl;
+        cout<<"wait_1s_to_update_status!"<<endl;
     }
 }
 
-bool plan_system::isdone()//�������
+bool plan_system::isdone()//判断总体结束
 {
     bool isdone_flag=true;
     for(int i=0;i<plan_job_nb;i++)
@@ -223,7 +224,7 @@ bool plan_system::isdone()//�������
 
 void plan_system::status_detect_v1(ros_com &rc)
 {
-    //���ȼ�����
+    //优先级排序
     for (int i = 0; i < plan_job_nb; i++)
     {
         for (int j = 0; j < plan_job_nb -  i - 1; j++)
