@@ -1,4 +1,10 @@
-uint8 check_id
+# 通过推车编号向数据库申请工艺信息
+# client：中央控制系统 server：数据库系统
+
+# 推车编号
+string cart_id
 ---
+# 工件数目
 uint8 job_nb
+# 工件信息
 job[] jobs

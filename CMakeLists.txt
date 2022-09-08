@@ -52,12 +52,18 @@ add_message_files(
   FILES
   process.msg
   job.msg
+  potStatus.msg
+  plcStatus.msg
 )
 
 ## Generate services in the 'srv' folder
 add_service_files(
   FILES
   getJobInfo.srv
+  sendInfo.srv
+  loadUnload.srv
+  sendPotOrder.srv
+  sendRFIDInfo.srv
 )
 
 ## Generate actions in the 'action' folder
@@ -162,7 +168,7 @@ add_library(electroplate_control_git_library
 # )
 
 add_executable(main_control_git
-        src/main_control.cpp
+        src/main_control_git.cpp
         )
 target_link_libraries(main_control_git electroplate_control_git_library ${catkin_LIBRARIES})
 

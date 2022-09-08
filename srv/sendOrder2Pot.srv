@@ -1,8 +1,0 @@
-//槽号
-uint8 pot_id
-//数量
-uint8 job_nbs
-//通电时间
-uint8 work_time
----
-bool check_flag

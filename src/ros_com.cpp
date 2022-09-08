@@ -3,6 +3,7 @@
 #include <std_msgs/String.h>
 // #include <boost/thread.hpp>
 #include "electroplate_control_system_git/ros_com.h"
+// #include "electroplate_control_system_git/getJobInfo.h"
 
 using namespace std;
 
@@ -27,16 +28,18 @@ ros_com::ros_com(ros::NodeHandle* nodehandle):n_(*nodehandle)
     order_1_sub = n_.subscribe("order1Feedback",20,&ros_com::order1FeedbackCallback,this);
     position_1_sub = n_.subscribe("position1",20,&ros_com::position1FeedbackCallback,this);
     order_1_pub = n_.advertise<std_msgs::String>("order1", 20);
+
+    // get_job_info_client=n_.serviceClient<electroplate_control_system_git::getJobInfo>("getJonInfo");
 }
 
 //轨道车工控机发送命令完成反馈信号
 //移动完成【21】【21】
 //抓取完成【22+目标点类型+目标点id+工件0id】【22111】目标点类型：1槽2车
-//移动去放置完成【22+目标点类型+目标点id+工件0id】【22111】
-//移动去水洗完成【22+目标点类型+目标点id+工件0id】【22111】
+//移动去放置完成【23+目标点类型+目标点id+工件0id】【22111】
+//移动去水洗完成【24+目标点类型+目标点id+工件0id】【22111】
 void ros_com::order0FeedbackCallback(const std_msgs::String::ConstPtr& msg)
 {
-    ROS_INFO("I heard : [%s]" , msg->data.c_str()); // String 转为 str字符串
+    ROS_INFO("[order0Feedback]:I heard : [%s]" , msg->data.c_str()); // String 转为 str字符串
     // ROS_INFO_STREAM("thread="<<boost::this_thread::get_id());
     //解析数据
     int flag = stoi(msg->data.substr(0,2));//获取校验位
@@ -110,7 +113,7 @@ void ros_com::order0Publish(std_msgs::String& msg)
 
 void ros_com::order1FeedbackCallback(const std_msgs::String::ConstPtr& msg)
 {
-    ROS_INFO("I heard : [%s]" , msg->data.c_str()); // String 转为 str字符串
+    ROS_INFO("[order1Feedback]:I heard : [%s]" , msg->data.c_str()); // String 转为 str字符串
     // ROS_INFO_STREAM("thread="<<boost::this_thread::get_id());
 
     //解析数据
@@ -179,7 +182,7 @@ void ros_com::order1Publish(std_msgs::String& msg)
 }
 
 //发送移动命令
-//移动【01+距离+最大速度】【012222218】
+//移动【01+机械臂id+距离+最大速度】【012222218】
 void ros_com::send_order_01(int robot_id,int tgt_pos,int max_vel)
 {
     std_msgs::String msg_ord;
@@ -206,7 +209,7 @@ void ros_com::send_order_01(int robot_id,int tgt_pos,int max_vel)
 }
 
 //发送抓取命令
-//抓取【02+目标点类型+目标点id+工件数量+工件0id+工件0缓冲区id+工件1id+工件1缓冲区id】【0213320011】
+//抓取【02+机械臂id+目标点类型+目标点id+工件数量+工件0id+工件0缓冲区id+工件1id+工件1缓冲区id】【0213320011】
 void ros_com::send_order_02(int robot_id,int tgt_type,int tgt_id,int job_nb,int job0_id,int job0_buffer,int job1_id,int job1_buffer)
 {
     std_msgs::String msg_ord;
@@ -234,7 +237,7 @@ void ros_com::send_order_02(int robot_id,int tgt_type,int tgt_id,int job_nb,int 
 }
 
 //发送移动去抓取命令
-//移动去抓取【03+目标点类型+目标点id+最大速度+工件数量+工件0id+工件0缓冲区id+工件1id+工件1缓冲区id】【021331820011】
+//移动去抓取【03+机械臂id+目标点类型+目标点id+最大速度+工件数量+工件0id+工件0缓冲区id+工件1id+工件1缓冲区id】【031331820011】
 void ros_com::send_order_03(int robot_id,int tgt_type,int tgt_id,int max_vel,int job_nb,int job0_id,int job0_buffer,int job1_id,int job1_buffer)
 {
     std_msgs::String msg_ord;
@@ -264,7 +267,7 @@ void ros_com::send_order_03(int robot_id,int tgt_type,int tgt_id,int max_vel,int
 }
 
 //发送移动去水洗命令
-//移动去抓取【04+目标点类型+目标点id+最大速度+工件数量+工件0id+工件0缓冲区id+工件1id+工件1缓冲区id+水洗时间】【021331820011030】
+//移动去抓取【04+机械臂id+目标点类型+目标点id+最大速度+工件数量+工件0id+工件0缓冲区id+工件1id+工件1缓冲区id+水洗时间】【021331820011030】
 void ros_com::send_order_04(int robot_id,int tgt_type,int tgt_id,int max_vel,int job_nb,int job0_id,int job0_buffer,int job1_id,int job1_buffer,int clean_time)
 {
     std_msgs::String msg_ord;
@@ -295,3 +298,18 @@ void ros_com::send_order_04(int robot_id,int tgt_type,int tgt_id,int max_vel,int
         order1Publish(msg_ord);
     }
 }
+
+//呼叫服务，向数据库获取工件信息
+// void ros_com::callGetJobInfo()
+// {
+//     electroplate_control_system_git::getJobInfo srv;
+//     srv.request.check_id=1;
+//     if(get_job_info_client.call(srv))
+//     {
+
+//     }
+//     else
+//     {
+//         ROS_ERROR("Failed to call service");
+//     }
+// }

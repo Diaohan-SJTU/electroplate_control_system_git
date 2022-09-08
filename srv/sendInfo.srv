@@ -1,5 +1,7 @@
-//发送控制系统重要信息
-//机械臂行为
+# 发送控制系统重要信息
+# client：中央控制系统 server：数据库系统
+
+# 机械臂行为，其余未定
 string robotmovements
 ---
 bool check_flag

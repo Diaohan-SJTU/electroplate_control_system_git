@@ -1,0 +1,12 @@
+# 上下料申请
+# client：现场PLC模块 server：中央控制系统
+
+# 上料申请
+bool load_request
+# 下料申请
+bool unload_request
+---
+# 上料允许
+bool load_permission
+# 下料允许
+bool unload_permission

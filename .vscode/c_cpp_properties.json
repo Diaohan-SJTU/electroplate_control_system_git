@@ -9,7 +9,7 @@
         "/home/diaohan/catkin_ws/devel/include/**",
         "/opt/ros/noetic/include/**",
         "/home/diaohan/catkin_ws/src/electroplate_control_system_git/include/**",
-        "/home/diaohan/catkin_ws/src/ros_tcp/include/**",
+        "/home/diaohan/catkin_ws/src/devel/include/**",
         "/home/diaohan/catkin_ws/src/test000/include/**",
         "/home/diaohan/catkin_ws/src/warning/include/**",
         "/usr/include/**"
