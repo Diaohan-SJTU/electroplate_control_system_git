@@ -167,8 +167,8 @@ add_library(electroplate_control_git_library
 #   ${catkin_LIBRARIES}
 # )
 
-add_executable(main_control_git
-        src/main_control_git.cpp
+add_executable(main_control
+        src/main_control.cpp
         )
 target_link_libraries(main_control_git electroplate_control_git_library ${catkin_LIBRARIES})
 
