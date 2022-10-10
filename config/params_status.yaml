@@ -1,0 +1,46 @@
+# 总状态
+system_whole_status: false
+
+# 机器人0相关状态量
+robot0:
+  whole_status: false
+  connection_status: false
+  update_time: 0
+  laser1_status: false
+  laser2_status: false
+  radar1_status: false
+  radar2_status: false
+  plc_status: false
+  robot_status: false
+  
+# 机器人1相关状态量
+robot1:
+  whole_status: false
+  connection_status: false
+  update_time: 0
+  laser1_status: false
+  laser2_status: false
+  radar1_status: false
+  radar2_status: false
+  plc_status: false
+  robot_status: false
+
+# plc相关状态量
+plc_whole_status: false
+plc_connection_status: false
+plc_update_time: 0
+raster1_status: false
+raster2_status: false
+raster3_status: false
+raster4_status: false
+emergency_status: false
+
+# 电镀槽相关状态量
+pot_whole_status: false
+pot_connection_status: false
+pot_update_time: 0
+
+# 数据库相关状态量
+database_whole_status: false
+database_connection_status: false
+database_update_time: 0

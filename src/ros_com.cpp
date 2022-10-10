@@ -1,9 +1,10 @@
 #include <iostream>
 #include <ros/ros.h>
 #include <std_msgs/String.h>
-// #include <boost/thread.hpp>
+#include <boost/thread.hpp>
 #include "electroplate_control_system_git/ros_com.h"
-// #include "electroplate_control_system_git/getJobInfo.h"
+#include "electroplate_control_system_git/getJobInfo.h"
+#include "electroplate_control_system_git/sendInfo.h"
 
 using namespace std;
 
@@ -21,6 +22,7 @@ ros_com::ros_com(ros::NodeHandle* nodehandle):n_(*nodehandle)
     robot0_position_interval=20000;
     robot1_position_interval=20000;
     
+    
     order_0_sub = n_.subscribe("order0Feedback",20,&ros_com::order0FeedbackCallback,this);
     position_0_sub = n_.subscribe("position0",20,&ros_com::position0FeedbackCallback,this);
     order_0_pub = n_.advertise<std_msgs::String>("order0", 20);
@@ -29,8 +31,10 @@ ros_com::ros_com(ros::NodeHandle* nodehandle):n_(*nodehandle)
     position_1_sub = n_.subscribe("position1",20,&ros_com::position1FeedbackCallback,this);
     order_1_pub = n_.advertise<std_msgs::String>("order1", 20);
 
-    // get_job_info_client=n_.serviceClient<electroplate_control_system_git::getJobInfo>("getJonInfo");
+    get_job_info_client=n_.serviceClient<electroplate_control_system_git::getJobInfo>("getJonInfo");
+    get_job_info_client=n_.serviceClient<electroplate_control_system_git::sendInfo>("sendInfo");
 }
+
 
 //轨道车工控机发送命令完成反馈信号
 //移动完成【21】【21】

@@ -51,9 +51,11 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(
   FILES
   process.msg
-  job.msg
-  potStatus.msg
-  plcStatus.msg
+  jobs.msg
+  # potStatus.msg
+  # plcStatus.msg
+  # databaseStatus.msg
+  # robotStatus.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -140,6 +142,7 @@ add_library(electroplate_control_git_library
   src/resource_management.cpp
   src/resource.cpp
   src/ros_com.cpp
+  src/emergency.cpp
 )
 
 ## Add cmake target dependencies of the library
@@ -168,9 +171,14 @@ add_library(electroplate_control_git_library
 # )
 
 add_executable(main_control_git
-        src/main_control.cpp
+        src/main_control_git.cpp
         )
 target_link_libraries(main_control_git electroplate_control_git_library ${catkin_LIBRARIES})
+
+add_executable(emergency
+        src/emergency.cpp
+        )
+target_link_libraries(emergency ${catkin_LIBRARIES})
 
 #############
 ## Install ##

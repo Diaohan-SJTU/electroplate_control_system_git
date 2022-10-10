@@ -7,4 +7,4 @@ string cart_id
 # 工件数目
 uint8 job_nb
 # 工件信息
-job[] jobs
+jobs[] jobs
