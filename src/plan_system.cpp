@@ -9,69 +9,80 @@
 using namespace std;
 
 //使用内置工艺储存，后续需更改为调用ros service
-void plan_system::job_init(int *type_list)
+// void plan_system::job_init(int *type_list)
+// {
+//     for(int i=0;i<6;i++)
+//     {
+//         jobs[i].id=i;
+//         jobs[i].priority=1;
+//         jobs[i].type=type_list[i];
+//         jobs[i].pot_process_nb=11;
+//         //使用内置的两种工艺
+//         switch(type_list[i])
+//         {
+//             case 0:
+//                 for(int m=0;m<20;m++)
+//                 {
+//                     for(int n=0;n<4;n++)
+//                     {
+//                         jobs[i].pot_process[m][n]=pot_process_information0[m][n];
+//                     }
+//                 }
+//                 break;
+//             case 1:
+//                 for(int m=0;m<20;m++)
+//                 {
+//                     for(int n=0;n<4;n++)
+//                     {
+//                         jobs[i].pot_process[m][n]=pot_process_information1[m][n];
+//                     }
+//                 }
+//                 break;
+//         }
+//     }
+//     for(int i=0;i<6;i++)
+//     {
+//         resourceManagement.carts[0].buffer_status[i]=1;
+//     }
+//     cout<<"job_init_over"<<endl;
+
+// }
+
+//根据ros_com的job信息初始化plan_job类，作为调度的基本单元
+void plan_system::plan_job_init(ros_com &rc)
 {
-    for(int i=0;i<6;i++)
-    {
-        jobs[i].id=i;
-        jobs[i].priority=1;
-        jobs[i].type=type_list[i];
-        jobs[i].pot_process_nb=11;
-        //使用内置的两种工艺
-        switch(type_list[i])
-        {
-            case 0:
-                for(int m=0;m<20;m++)
-                {
-                    for(int n=0;n<4;n++)
-                    {
-                        jobs[i].pot_process[m][n]=pot_process_information0[m][n];
-                    }
-                }
-                break;
-            case 1:
-                for(int m=0;m<20;m++)
-                {
-                    for(int n=0;n<4;n++)
-                    {
-                        jobs[i].pot_process[m][n]=pot_process_information1[m][n];
-                    }
-                }
-                break;
-        }
-    }
-    for(int i=0;i<6;i++)
+    int job_nb=rc.job_nb;
+    for(int i=0;i<job_nb;i++)
     {
         resourceManagement.carts[0].buffer_status[i]=1;
     }
-    cout<<"job_init_over"<<endl;
 
-}
-//根据job信息初始化plan_job类，作为调度的基本单元
-void plan_system::plan_job_init()
-{
-    //根据jobs信息获得job_repeat_information，即获取6个工件的重复信息；
-    job_repeat_information[0][0]=0;
-    job_repeat_information[0][1]=0;
+    //根据jobs信息得到job_repeat_information,plan_job_init;即获取工件的重复信息
+    for(int i=0;i<6;i++)
+    {
+        job_repeat_information[i][0]=0;
+        job_repeat_information[i][1]=0;
+    }
     plan_job_nb=1;
-    int repeat_time=0;
+    bool join_flag;
     for(int i=1;i<6;i++)
     {
-        job_repeat_information[i][1]=0;
-        for(int j=0;j<i;j++)
+        join_flag=false;
+        for(int j=0;j<plan_job_nb;j++)
         {
-            if (jobs[i].type==jobs[j].type)
+            if(job_repeat_information[j][1]==0&&rc.jobs[job_repeat_information[j][0]].type==rc.jobs[i].type)
             {
-                repeat_time++;
+                job_repeat_information[j][1]=i;
+                join_flag=true;
+                break;
             }
         }
-        if(repeat_time%2==0)
+        if(!join_flag)
         {
+            job_repeat_information[plan_job_nb][0]=i;
             plan_job_nb++;
         }
-        job_repeat_information[plan_job_nb-1][repeat_time%2]=i;
-        repeat_time=0;
-    }
+    } 
 
     //按照上述重复信息，初始化数个plan_job
     for (int i=0;i<plan_job_nb;i++)
@@ -81,13 +92,13 @@ void plan_system::plan_job_init()
         int a= job_repeat_information[i][0];//plan_job's job1_id
         int b= job_repeat_information[i][1];//plan_job's job2_id
         plan_jobs[i].id=i;
-        plan_jobs[i].type=jobs[a].type;
-        plan_jobs[i].priority=jobs[a].priority;
+        plan_jobs[i].type=rc.jobs[a].type;
+        plan_jobs[i].priority=rc.jobs[a].priority;
         plan_jobs[i].is_ready=true;
         plan_jobs[i].is_process=false;
         plan_jobs[i].next_operation_nb=0;
         plan_jobs[i].job_number=1;
-        plan_jobs[i].co_id[0]=jobs[a].id;
+        plan_jobs[i].co_id[0]=rc.jobs[a].id;
         plan_jobs[i].co_id[1]=0;
         plan_jobs[i].start_time=time(NULL);
         plan_jobs[i].wait_time=0;
@@ -99,7 +110,7 @@ void plan_system::plan_job_init()
         {
             plan_jobs[i].job_number=2;
             plan_jobs[i].priority+=1;
-            plan_jobs[i].co_id[1]=jobs[b].id;
+            plan_jobs[i].co_id[1]=rc.jobs[b].id;
         }
 
         //first_operation:cart to robot
@@ -114,9 +125,9 @@ void plan_system::plan_job_init()
         int n = 0;
 
         //operation[1-2m+2]
-        for (int m=0;m<jobs[i].pot_process_nb;m++)
+        for (int m=0;m<rc.jobs[i].pot_process_nb;m++)
         {
-            if(jobs[a].pot_process[m][3]==0)//工艺槽
+            if(rc.jobs[a].pot_process[m][3]==0)//工艺槽
             {
                 //robot to pot
                 // put
@@ -124,10 +135,10 @@ void plan_system::plan_job_init()
                 plan_jobs[i].operation_list[n].robot_id=0;//robot
                 plan_jobs[i].operation_list[n].is_assign= false;
                 plan_jobs[i].operation_list[n].target_type=1;//pot
-                plan_jobs[i].operation_list[n].target_id=jobs[a].pot_process[m][0];
+                plan_jobs[i].operation_list[n].target_id=rc.jobs[a].pot_process[m][0];
                 plan_jobs[i].operation_list[n].action_type=2;
-                plan_jobs[i].operation_list[n].min_time4process=jobs[a].pot_process[m][1];
-                plan_jobs[i].operation_list[n].max_time4process=jobs[a].pot_process[m][2];
+                plan_jobs[i].operation_list[n].min_time4process=rc.jobs[a].pot_process[m][1];
+                plan_jobs[i].operation_list[n].max_time4process=rc.jobs[a].pot_process[m][2];
                 plan_jobs[i].operation_nb++;
                 //pot to robot
                 // grab
@@ -135,7 +146,7 @@ void plan_system::plan_job_init()
                 plan_jobs[i].operation_list[n].robot_id=0;//robot
                 plan_jobs[i].operation_list[n].is_assign= false;
                 plan_jobs[i].operation_list[n].target_type=1;//pot
-                plan_jobs[i].operation_list[n].target_id=jobs[a].pot_process[m][0];
+                plan_jobs[i].operation_list[n].target_id=rc.jobs[a].pot_process[m][0];
                 plan_jobs[i].operation_list[n].action_type=1;
                 plan_jobs[i].operation_list[n].min_time4process=0;
                 plan_jobs[i].operation_list[n].max_time4process=0;
@@ -147,10 +158,10 @@ void plan_system::plan_job_init()
                 plan_jobs[i].operation_list[n].robot_id=0;//robot
                 plan_jobs[i].operation_list[n].is_assign= false;
                 plan_jobs[i].operation_list[n].target_type=1;//pot
-                plan_jobs[i].operation_list[n].target_id=jobs[a].pot_process[m][0];
+                plan_jobs[i].operation_list[n].target_id=rc.jobs[a].pot_process[m][0];
                 plan_jobs[i].operation_list[n].action_type = 3;
-                plan_jobs[i].operation_list[n].min_time4process=jobs[a].pot_process[m][1];
-                plan_jobs[i].operation_list[n].max_time4process=jobs[a].pot_process[m][2];
+                plan_jobs[i].operation_list[n].min_time4process=rc.jobs[a].pot_process[m][1];
+                plan_jobs[i].operation_list[n].max_time4process=rc.jobs[a].pot_process[m][2];
                 plan_jobs[i].operation_nb++;
             }
 

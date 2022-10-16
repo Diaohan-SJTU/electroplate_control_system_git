@@ -1,8 +1,10 @@
 # RFID信息上报
 # client：现场PLC模块 server：中央控制系统
 
-# 推车RFID编号
-string cart_id
+# 上料区推车RFID编号
+string load_cart_id
+# 下料区推车RFID编号
+string unload_cart_id
 ---
 # 验证标识
 bool check_flag 

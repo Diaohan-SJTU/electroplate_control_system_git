@@ -94,4 +94,5 @@ int main(int argc, char** argv)
         check_status(n);
         loop_rate.sleep();
     }
+    return 0;
 }

@@ -75,7 +75,21 @@
 - server名：
 
 #### 现场模块
-- 
+- 发送重新上下料信息
+- topic:reload
+- std_msgs::String
+
+- 发送RFID信息
+- server：中央控制模块 client：现场模块
+- service名称：sendRFIDInfo.srv
+- service内容：
+
+    //推车RFID编号
+    string cart_id
+    ---
+    //验证标识
+    bool check_flag 
+
 
 ## 文件介绍
 
@@ -83,4 +97,4 @@
 ## 编译依赖
 
 
-## 运行
+## 运行逻辑

@@ -63,7 +63,6 @@ add_service_files(
   FILES
   getJobInfo.srv
   sendInfo.srv
-  loadUnload.srv
   sendPotOrder.srv
   sendRFIDInfo.srv
 )
@@ -142,7 +141,6 @@ add_library(electroplate_control_git_library
   src/resource_management.cpp
   src/resource.cpp
   src/ros_com.cpp
-  src/emergency.cpp
 )
 
 ## Add cmake target dependencies of the library
@@ -179,6 +177,11 @@ add_executable(emergency
         src/emergency.cpp
         )
 target_link_libraries(emergency ${catkin_LIBRARIES})
+
+add_executable(node_plc
+        src/node_plc.cpp
+        )
+target_link_libraries(node_plc ${catkin_LIBRARIES})
 
 #############
 ## Install ##

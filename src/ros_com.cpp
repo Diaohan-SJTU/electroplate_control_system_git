@@ -12,6 +12,9 @@ ros_com::ros_com(ros::NodeHandle* nodehandle):n_(*nodehandle)
 {
     ROS_INFO("in class constructor of ros_com!");
 
+    work_start_flag=false;
+    work_end_flag=false;
+    
     robot_done_flag[2]={0};
     job0_id_done_flag[6]={0};//六个工件id的命令执行状态，planjob通过其co_id[0]匹配更新状态
     cart_done_flag[2]={0};
@@ -22,6 +25,9 @@ ros_com::ros_com(ros::NodeHandle* nodehandle):n_(*nodehandle)
     robot0_position_interval=20000;
     robot1_position_interval=20000;
     
+    job_nb=0;
+    job_start_flag=false;
+
     
     order_0_sub = n_.subscribe("order0Feedback",20,&ros_com::order0FeedbackCallback,this);
     position_0_sub = n_.subscribe("position0",20,&ros_com::position0FeedbackCallback,this);
@@ -32,7 +38,9 @@ ros_com::ros_com(ros::NodeHandle* nodehandle):n_(*nodehandle)
     order_1_pub = n_.advertise<std_msgs::String>("order1", 20);
 
     get_job_info_client=n_.serviceClient<electroplate_control_system_git::getJobInfo>("getJonInfo");
-    get_job_info_client=n_.serviceClient<electroplate_control_system_git::sendInfo>("sendInfo");
+    send_info_client=n_.serviceClient<electroplate_control_system_git::sendInfo>("sendInfo");
+    send_RFID_info_server=n_.advertiseService("sendRFIDInfo",&ros_com::getRFIDCallback,this);
+    reload_pub=n_.advertise<std_msgs::String>("reload",5);
 }
 
 
@@ -303,6 +311,49 @@ void ros_com::send_order_04(int robot_id,int tgt_type,int tgt_id,int max_vel,int
     }
 }
 
+
+bool ros_com::getRFIDCallback(electroplate_control_system_git::sendRFIDInfo::Request &req,electroplate_control_system_git::sendRFIDInfo::Response &res)
+{
+    electroplate_control_system_git::getJobInfo srv;
+    srv.request.cart_id=req.load_cart_id;
+    if(get_job_info_client.call(srv))
+    {
+        job_nb=srv.response.job_nb;
+        for(int i=0;i<job_nb;i++)
+        {
+            jobs[i].id=i;
+            jobs[i].type=srv.response.jobs[i].type;
+            jobs[i].pot_process_nb=srv.response.jobs[i].process_nb;
+            for(int j=0;j<jobs[i].pot_process_nb;j++)
+            {
+                //槽号
+                jobs[i].pot_process[j][0]=srv.response.jobs[i].all_process[j].pot_id;
+                //最小加工时间
+                jobs[i].pot_process[j][1]=srv.response.jobs[i].all_process[j].min_time;
+                //最大加工时间
+                jobs[i].pot_process[j][2]=srv.response.jobs[i].all_process[j].max_time;
+                //是否为水洗槽
+                jobs[i].pot_process[j][3]=srv.response.jobs[i].all_process[j].is_water_pot;
+            }
+            
+        }
+        work_start_flag=true;
+    }
+    else
+    {
+        ROS_ERROR("Failed to call service");
+    }
+    return 0;
+}
+
+//向plc节点发送重新上下料消息
+void ros_com::reloadPublish()
+{
+    std_msgs::String msg;
+    stringstream ss_ord;
+    ss_ord<<0;
+    reload_pub.publish(msg);
+}
 //呼叫服务，向数据库获取工件信息
 // void ros_com::callGetJobInfo()
 // {

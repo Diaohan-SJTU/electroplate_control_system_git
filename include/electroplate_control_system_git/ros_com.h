@@ -4,6 +4,7 @@
 #include <iostream>
 #include <ros/ros.h>
 #include <std_msgs/String.h>
+#include "electroplate_control_system_git/job.h"
 
 #include "electroplate_control_system_git/jobs.h"
 #include "electroplate_control_system_git/process.h"
@@ -31,10 +32,16 @@ private:
 
     ros::ServiceClient get_job_info_client;//向数据库获取工件信息的client
     ros::ServiceClient send_info_client;//向数据库发送重要信息的client
+    ros::ServiceServer send_RFID_info_server;//获取RFID信息的server
+    ros::Publisher reload_pub;//向plc模块发送重新上下料的信号
 
 
 
 public:
+    //开始生产标志
+    bool work_start_flag;
+    //结束生产标志
+    bool work_end_flag;
     
     //定义命令接收标志
     int robot_done_flag[2];
@@ -46,7 +53,12 @@ public:
     int robot1_position;
     int robot0_position_interval;
     int robot1_position_interval;
-    
+    //当前工件信息
+    int job_nb;
+    job jobs[6];
+    //开始加工的标志
+    bool job_start_flag;
+
     ros_com(ros::NodeHandle* nodehandle);
     //机械臂相关函数
     void order0FeedbackCallback(const std_msgs::String::ConstPtr& msg);
@@ -70,6 +82,8 @@ public:
     
 
     //PLC相关函数
+    bool getRFIDCallback(electroplate_control_system_git::sendRFIDInfo::Request &req,electroplate_control_system_git::sendRFIDInfo::Response &res);
+    void reloadPublish();
 
 
  
