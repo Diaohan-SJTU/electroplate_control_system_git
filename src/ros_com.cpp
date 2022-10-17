@@ -3,8 +3,7 @@
 #include <std_msgs/String.h>
 #include <boost/thread.hpp>
 #include "electroplate_control_system_git/ros_com.h"
-#include "electroplate_control_system_git/getJobInfo.h"
-#include "electroplate_control_system_git/sendInfo.h"
+
 
 using namespace std;
 
@@ -41,6 +40,7 @@ ros_com::ros_com(ros::NodeHandle* nodehandle):n_(*nodehandle)
     send_info_client=n_.serviceClient<electroplate_control_system_git::sendInfo>("sendInfo");
     send_RFID_info_server=n_.advertiseService("sendRFIDInfo",&ros_com::getRFIDCallback,this);
     reload_pub=n_.advertise<std_msgs::String>("reload",5);
+    work_start_end_server = n_.advertiseService("workStartEnd",&ros_com::workStartEndCallback,this);
 }
 
 
@@ -343,7 +343,7 @@ bool ros_com::getRFIDCallback(electroplate_control_system_git::sendRFIDInfo::Req
     {
         ROS_ERROR("Failed to call service");
     }
-    return 0;
+    return true;
 }
 
 //向plc节点发送重新上下料消息
@@ -368,3 +368,32 @@ void ros_com::reloadPublish()
 //         ROS_ERROR("Failed to call service");
 //     }
 // }
+
+//处理gui节点的开启生产，结束生产服务
+bool ros_com::workStartEndCallback(electroplate_control_system_git::workStartEnd::Request &req,electroplate_control_system_git::workStartEnd::Response &res)
+{
+    if(req.work_start_flag)
+    {
+        if(work_start_flag==true)
+        {
+            res.work_start_check_flag=false;
+        }
+        else{
+            res.work_start_check_flag=true;
+            work_start_flag=true;
+        }
+    }
+    if(req.work_end_flag)
+    {
+        if(job_start_flag==true)
+        {
+            res.work_end_check_flag=false;
+        }
+        else{
+            res.work_end_check_flag=true;
+            work_end_flag=true;
+            work_start_flag=false;
+        }
+    }
+    return true;
+}

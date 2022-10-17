@@ -14,6 +14,7 @@
 #include "electroplate_control_system_git/loadUnload.h"
 #include "electroplate_control_system_git/sendPotOrder.h"
 #include "electroplate_control_system_git/sendRFIDInfo.h"
+#include "electroplate_control_system_git/workStartEnd.h"
 
 
 using namespace std;
@@ -34,6 +35,7 @@ private:
     ros::ServiceClient send_info_client;//向数据库发送重要信息的client
     ros::ServiceServer send_RFID_info_server;//获取RFID信息的server
     ros::Publisher reload_pub;//向plc模块发送重新上下料的信号
+    ros::ServiceServer work_start_end_server;//接受gui开始生产结束生产服务的server
 
 
 
@@ -85,7 +87,8 @@ public:
     bool getRFIDCallback(electroplate_control_system_git::sendRFIDInfo::Request &req,electroplate_control_system_git::sendRFIDInfo::Response &res);
     void reloadPublish();
 
-
+    //gui相关函数
+    bool workStartEndCallback(electroplate_control_system_git::workStartEnd::Request &req,electroplate_control_system_git::workStartEnd::Response &res);
  
 };
 

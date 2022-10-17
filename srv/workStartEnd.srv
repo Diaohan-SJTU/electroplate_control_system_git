@@ -1,0 +1,12 @@
+# 开始生产结束生产信号
+# client：GUI server：中央控制系统
+
+# 开始生产标识
+bool work_start_flag
+# 结束生产标识
+bool work_end_flag
+---
+# 开始生产反馈标识
+bool work_start_check_flag
+# 结束生产反馈标识
+bool work_end_check_flag

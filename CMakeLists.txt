@@ -65,6 +65,7 @@ add_service_files(
   sendInfo.srv
   sendPotOrder.srv
   sendRFIDInfo.srv
+  workStartEnd.srv
 )
 
 ## Generate actions in the 'action' folder
