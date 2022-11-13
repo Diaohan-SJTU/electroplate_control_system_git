@@ -3,5 +3,5 @@
     <rosparam file="$(find electroplate_control_system_git)/config/params_status.yaml" command="load" ns="params" />
     <node pkg="electroplate_control_system_git" name="main_control_node" type="main_control_git" output="screen"/>
     <node pkg="electroplate_control_system_git" name="emergency_node" type="emergency" output="screen"/>
-    <node pkg="electroplate_ui" name="RosPyGUI" type="main.py" output="screen"/>
+    <node pkg="electroplate_ui_git" name="RosPyGUI" type="main.py" output="screen"/>
 </launch>
