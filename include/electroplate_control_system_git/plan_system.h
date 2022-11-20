@@ -21,7 +21,7 @@ public:
     int priority_list[6];
     int plan_job_nb;
     plan_job plan_jobs[6];
-    resource_management resourceManagement;
+    resource_management rm;
 
     // void job_init(int type_list[6]);
     void plan_job_init(ros_com &rc);

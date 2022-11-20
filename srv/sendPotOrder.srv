@@ -1,12 +1,12 @@
 # 槽号
-uint8 pot_id
+int32 pot_id
 # 数量
-uint8 job_nbs
+int32 job_nbs
 # 槽盖控制
 bool is_lid_open
 # 通电控制
 bool is_power_on
 # 通电时间
-uint8 work_time
+int32 work_time
 ---
 bool check_flag

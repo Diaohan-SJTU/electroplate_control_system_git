@@ -1,9 +1,7 @@
 # 工步信息
 # 槽号
-uint8 pot_id
+int32 pot_id
 # 最小加工时间
-uint8 min_time
+int32 min_time
 # 最大加工时间
-uint8 max_time
-# 是否为水洗槽
-bool is_water_pot
+int32 max_time

@@ -9,7 +9,6 @@ using namespace std;
 
 ros_com::ros_com(ros::NodeHandle* nodehandle):n_(*nodehandle)
 {
-    ROS_INFO("in class constructor of ros_com!");
 
     work_start_flag=false;
     work_end_flag=false;
@@ -36,11 +35,12 @@ ros_com::ros_com(ros::NodeHandle* nodehandle):n_(*nodehandle)
     position_1_sub = n_.subscribe("position1",20,&ros_com::position1FeedbackCallback,this);
     order_1_pub = n_.advertise<std_msgs::String>("order1", 20);
 
-    get_job_info_client=n_.serviceClient<electroplate_control_system_git::getJobInfo>("getJonInfo");
+    get_job_info_client=n_.serviceClient<electroplate_control_system_git::getJobInfo>("getJobInfo");
     send_info_client=n_.serviceClient<electroplate_control_system_git::sendInfo>("sendInfo");
     send_RFID_info_server=n_.advertiseService("sendRFIDInfo",&ros_com::getRFIDCallback,this);
     reload_pub=n_.advertise<std_msgs::String>("reload",5);
     work_start_end_server = n_.advertiseService("workStartEnd",&ros_com::workStartEndCallback,this);
+    ROS_INFO("ros_com started!");
 }
 
 
@@ -318,30 +318,50 @@ bool ros_com::getRFIDCallback(electroplate_control_system_git::sendRFIDInfo::Req
     srv.request.cart_id=req.load_cart_id;
     if(get_job_info_client.call(srv))
     {
+        ROS_INFO("Succeed to get job information from node_data!");
         job_nb=srv.response.job_nb;
+        // cout<<job_nb<<endl;
         for(int i=0;i<job_nb;i++)
         {
             jobs[i].id=i;
+            // cout<<jobs[i].id<<endl;
             jobs[i].type=srv.response.jobs[i].type;
+            // cout<<jobs[i].type<<endl;
             jobs[i].pot_process_nb=srv.response.jobs[i].process_nb;
+            // cout<<jobs[i].pot_process_nb<<endl;
             for(int j=0;j<jobs[i].pot_process_nb;j++)
             {
                 //槽号
                 jobs[i].pot_process[j][0]=srv.response.jobs[i].all_process[j].pot_id;
+                // cout<<jobs[i].pot_process[j][0]<<endl;
                 //最小加工时间
                 jobs[i].pot_process[j][1]=srv.response.jobs[i].all_process[j].min_time;
+                // cout<<jobs[i].pot_process[j][1]<<endl;
                 //最大加工时间
                 jobs[i].pot_process[j][2]=srv.response.jobs[i].all_process[j].max_time;
-                //是否为水洗槽
-                jobs[i].pot_process[j][3]=srv.response.jobs[i].all_process[j].is_water_pot;
+                // cout<<jobs[i].pot_process[j][2]<<endl;
             }
-            
         }
-        work_start_flag=true;
+        cout<<"###job_information_print"<<endl;
+            cout<<"job_nb:"<<job_nb<<endl;
+            for(int i=0;i<job_nb;i++){
+                cout<<"job_id:"<<jobs[i].id<<endl;
+                cout<<"job_type:"<<jobs[i].type<<endl;
+                cout<<"job_pot_process_nb:"<<jobs[i].pot_process_nb<<endl;
+                for(int j=0;j<jobs[i].pot_process_nb;j++){
+                    cout<<"_pot_process_id:"<<jobs[i].pot_process[j][0]<<endl;
+                    cout<<"_pot_process_mintime:"<<jobs[i].pot_process[j][1]<<endl;
+                    cout<<"_pot_process_maxtime:"<<jobs[i].pot_process[j][2]<<endl;
+                }
+            }
+            cout<<"###job_information_print_over"<<endl;
+        job_start_flag=true;
+        ROS_INFO("Succeed to save job information and send work start signal!");
+
     }
     else
     {
-        ROS_ERROR("Failed to call service");
+        ROS_ERROR("Failed to get job information from node_data!");
     }
     return true;
 }

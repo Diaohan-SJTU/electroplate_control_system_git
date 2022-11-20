@@ -46,6 +46,7 @@ public:
     int position[2];
     int lid_state;
     int electric_state;
+    int type;//0:无杆，1：有杆；
 
     int move_judge();
     void time_record();//计时功能：开始电镀后启动计时、对buffer_status进行更改

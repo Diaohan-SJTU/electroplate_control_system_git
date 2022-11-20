@@ -10,7 +10,6 @@ public:
     int type;//工艺类型
     int id;//1-6
     int pot_process_nb;//工艺数量
-    int pot_process[20][4];//槽号、最小加工时间、最大加工时间、是否为水洗槽；
-    int priority;//优先级
+    int pot_process[20][3];//槽号、最小加工时间、最大加工时间；
 };
 #endif

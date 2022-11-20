@@ -21,13 +21,26 @@ int main(int argc, char** argv)
     ros::init(argc, argv, "main_control_node");
     ros::NodeHandle n;
     ros_com rc(&n);
-    ros::AsyncSpinner spinner(4);
+    ros::AsyncSpinner spinner(6);
     spinner.start();
     // 等待人机界面启动生产
-    while(!rc.work_start_flag)
-    {sleep(1000);}
+    ROS_INFO("waited for ui to click to start!");
+    // while(!rc.work_start_flag)
+    // {sleep(1000);}
+    // ROS_INFO("work started!");
     plan_system planSystem;
-    planSystem.resourceManagement.resource_init();
+    planSystem.rm.resource_init();
+    while(rc.job_start_flag==false)
+    {
+        sleep(1);//按秒数
+        ROS_INFO("wait!");
+    }
+    //启动生产过程
+    rc.job_start_flag=false;
+    ROS_INFO("job started!");
+    planSystem.plan_job_init(rc);
+    ROS_INFO("job end!");
+
     // 没有停止生产前
     // while(!rc.work_end_flag)
     // {

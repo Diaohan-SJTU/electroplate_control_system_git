@@ -116,67 +116,81 @@ int main(int argc, char** argv)
     ros::Subscriber reload_sub=n.subscribe("reload",20,reload_callback);
     ros::Rate loop_rate(5);
 
-    //socket server设置
-    int listenfd, connectfd;
-	struct sockaddr_in sever;
-	struct sockaddr_in client;
-	socklen_t addrlen;
-   /*
-	 *@fuc: 使用socket()函数产生套节字描述符
-	 */
-	listenfd = socket(AF_INET, SOCK_STREAM, 0);
-	printf("listenfd:%d",listenfd);
-	if(listenfd == -1)
-	{
-		printf("socket() error\n");
-		return -1;
-	}
-	/*
-	 *@fuc: 初始化server套节字地址信息 
-	 */
-	memset((void *)&sever,0,sizeof(sever));
-	sever.sin_family = AF_INET;
-	sever.sin_addr.s_addr = inet_addr("127.0.0.1");//ip
-	sever.sin_port = htons(PORT);//port
- 	/*
-	 *@fuc: 用bind()函数，将套接字与指定的协议地址绑定 
-	 */
-	if(bind(listenfd,(struct sockaddr *)&sever,sizeof(sever)) < 0)
-	{
-		printf("bind() error\n");
-		return -1;
-	}
-    /*
-	 *@fuc: 使用listen()函数，等待客户端的连接 
-	 */
-    if(listen(listenfd, LOG) < 0)
-    {
-        printf("listen() error.\n");
-        return -1;
-    }
-    addrlen = sizeof(client);
-	char recvbuf[1024];
-    //等待客户端连接，从listen队列中取出连接
-    connectfd = accept(listenfd,(struct sockaddr *)&client,&addrlen);
-    if(connectfd < 0)
-    {
-        printf("connect() error \n");
-        return -1;
-    }
-    printf("You got a connection from client's IP is %s, port is %d\n",
-            inet_ntoa(client.sin_addr), ntohs(client.sin_port));
+//     //socket server设置
+//     int listenfd, connectfd;
+// 	struct sockaddr_in sever;
+// 	struct sockaddr_in client;
+// 	socklen_t addrlen;
+//    /*
+// 	 *@fuc: 使用socket()函数产生套节字描述符
+// 	 */
+// 	listenfd = socket(AF_INET, SOCK_STREAM, 0);
+// 	printf("listenfd:%d",listenfd);
+// 	if(listenfd == -1)
+// 	{
+// 		printf("socket() error\n");
+// 		return -1;
+// 	}
+// 	/*
+// 	 *@fuc: 初始化server套节字地址信息 
+// 	 */
+// 	memset((void *)&sever,0,sizeof(sever));
+// 	sever.sin_family = AF_INET;
+// 	sever.sin_addr.s_addr = inet_addr("127.0.0.1");//ip
+// 	sever.sin_port = htons(PORT);//port
+//  	/*
+// 	 *@fuc: 用bind()函数，将套接字与指定的协议地址绑定 
+// 	 */
+// 	if(bind(listenfd,(struct sockaddr *)&sever,sizeof(sever)) < 0)
+// 	{
+// 		printf("bind() error\n");
+// 		return -1;
+// 	}
+//     /*
+// 	 *@fuc: 使用listen()函数，等待客户端的连接 
+// 	 */
+//     if(listen(listenfd, LOG) < 0)
+//     {
+//         printf("listen() error.\n");
+//         return -1;
+//     }
+//     addrlen = sizeof(client);
+// 	char recvbuf[1024];
+//     //等待客户端连接，从listen队列中取出连接
+//     connectfd = accept(listenfd,(struct sockaddr *)&client,&addrlen);
+//     if(connectfd < 0)
+//     {
+//         printf("connect() error \n");
+//         return -1;
+//     }
+//     printf("You got a connection from client's IP is %s, port is %d\n",
+//             inet_ntoa(client.sin_addr), ntohs(client.sin_port));
     
-    //额外线程监听socket通讯并执行相应函数：下料信息，下料完成信息，上料消息，上料完成消息，状态更新
-    //socket用法
-    while(1)
-	{	
-		recv(connectfd, recvbuf, sizeof(recvbuf), 0);
-		printf("client message: %s\n", recvbuf);
+//     //额外线程监听socket通讯并执行相应函数：下料信息，下料完成信息，上料消息，上料完成消息，状态更新
+//     //socket用法
+//     while(1)
+// 	{	
+// 		recv(connectfd, recvbuf, sizeof(recvbuf), 0);
+// 		printf("client message: %s\n", recvbuf);
 		
-		send(connectfd, "hello!",8,0);
-	}
-	    close(connectfd);
-	close(listenfd);
+// 		send(connectfd, "hello!",8,0);
+// 	}
+// 	    close(connectfd);
+// 	close(listenfd);
+    
+    //测试
+    electroplate_control_system_git::sendRFIDInfo srv;
+    srv.request.unload_cart_id="0";
+    srv.request.load_cart_id="0";
+    if(sendRFIDInfo_client.call(srv))
+    {
+        ROS_INFO("Succeed to send RFID information from node_plc!");
+        //socket发送消息，产线变绿
+    }
+    else{
+        ROS_INFO("failed to send RFID information from node_plc!");
+    };
+
 
 
     while(ros::ok())//持续更新plc节点状态，以及接受中控的重新上下料指令

@@ -11,6 +11,10 @@
 #include <algorithm>
 using namespace std;
 
+//资源初始化
+//槽的初始化，通过头文件数组；
+//推车初始化，数据库查询获得；
+//机械臂初始化，上电机械臂数量；
 void resource_management::resource_init()//资源初始化
 {
     for(int i=0;i<2;i++)//robots_init
@@ -30,11 +34,6 @@ void resource_management::resource_init()//资源初始化
         robots[i].plan_job_id=-1;
     }
 
-    int pots_position[49][2]={{0,538},{0,1588},{0,2638},{0,3688},{0,4738},{0,5788},{0,7326},{0,9074},{0,10574},{0,12074},
-                              {0,13826},{0,15574},{0,17074},{0,18826},{0,20778},{0,22497},{0,24472},{0,26270},{0,27820},{0,29370},
-                              {0,30920},{0,32470},{0,34020},{0,35570},{0,37120},{0,38670},{1,1035},{1,2837},{1,4635},{1,6437},
-                              {1,8235},{1,10285},{1,12087},{1,13885},{1,15687},{1,17237},{1,18787},{1,20337},{1,21887},{1,23437},
-                              {1,25235},{1,27037},{1,28587},{1,30137},{1,31935},{1,33737},{1,35535},{1,37337},{1,39135}};
     for(int i=0;i<49;i++)//pots_init
     {
         pots[i].type=1;
@@ -44,11 +43,13 @@ void resource_management::resource_init()//资源初始化
         pots[i].abnormal_status=0;
         pots[i].buffer_status=0;
         pots[i].job_nb=0;
-        pots[i].position[0]=pots_position[i][0];
-        pots[i].position[1]=pots_position[i][1];
+        pots[i].position[0]=pots_information[i][0];
+        pots[i].position[1]=pots_information[i][1];
+        pots[i].type=pots_information[i][2];
         pots[i].lid_state=0;
         pots[i].electric_state=0;
         pots[i].start_time=time(NULL);
+        
     }
 
     double carts_position[2][2];
@@ -56,7 +57,7 @@ void resource_management::resource_init()//资源初始化
     {
         for(int j=0;j<2;j++)
         {
-            carts_position[i][j]=pots_position[i+14][j];
+            carts_position[i][j]=pots_information[i+14][j];
         }
     }
     for(int i=0;i<2;i++)//carts_init
@@ -483,5 +484,10 @@ bool resource_management::is_dead(plan_job &planJob, int robot_id)
         if((pots[pot_id].job_nb+planJob.job_number+robots[robot_id].job_nb>2)&&(pots[pot_id].job_nb+robots[1-robot_id].job_nb>2)){return true;}
     }
     return false;
+}
+
+int resource_management::pot_type_query(int pot_id)
+{
+    return pots_information[pot_id][2];
 }
 

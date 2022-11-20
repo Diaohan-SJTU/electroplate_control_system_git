@@ -184,6 +184,11 @@ add_executable(node_plc
         )
 target_link_libraries(node_plc ${catkin_LIBRARIES})
 
+add_executable(node_database
+        src/node_database.cpp
+        )
+target_link_libraries(node_database ${catkin_LIBRARIES})
+
 #############
 ## Install ##
 #############
