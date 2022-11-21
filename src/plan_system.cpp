@@ -45,7 +45,6 @@ using namespace std;
 //         resourceManagement.carts[0].buffer_status[i]=1;
 //     }
 //     cout<<"job_init_over"<<endl;
-
 // }
 
 //根据ros_com的job信息初始化plan_job类，作为调度的基本单元

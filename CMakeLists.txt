@@ -189,6 +189,11 @@ add_executable(node_database
         )
 target_link_libraries(node_database ${catkin_LIBRARIES})
 
+add_executable(node_robot
+        src/node_robot.cpp
+        )
+target_link_libraries(node_robot ${catkin_LIBRARIES})
+
 #############
 ## Install ##
 #############
